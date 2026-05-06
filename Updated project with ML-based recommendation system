@@ -1,0 +1,45 @@
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Sample movie dataset
+data = {
+    'title': [
+        'Avengers', 'Iron Man', 'Thor', 'Captain America',
+        'Batman', 'The Dark Knight', 'Joker', 'Batman Begins'
+    ],
+    'genre': [
+        'action superhero', 'action superhero', 'action fantasy', 'action superhero',
+        'action dc', 'action crime', 'crime drama', 'action dc'
+    ]
+}
+
+df = pd.DataFrame(data)
+
+# Convert text data into numbers using TF-IDF
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(df['genre'])
+
+# Compute similarity
+similarity = cosine_similarity(tfidf_matrix)
+
+# Recommendation function
+def recommend(movie_name):
+    movie_name = movie_name.lower()
+    indices = df[df['title'].str.lower() == movie_name].index
+
+    if len(indices) == 0:
+        print("Movie not found")
+        return
+
+    idx = indices[0]
+    scores = list(enumerate(similarity[idx]))
+    scores = sorted(scores, key=lambda x: x[1], reverse=True)
+
+    print("\nRecommended Movies:")
+    for i in scores[1:4]:
+        print("-", df.iloc[i[0]]['title'])
+
+# Input
+movie = input("Enter a movie name: ")
+recommend(movie)
